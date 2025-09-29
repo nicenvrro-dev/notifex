@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type { Toast } from "../types/toast.type";
 import { useToastStore } from "../store/toast.store";
-import { getNameInitials } from "../utils/initials.util";
+import { extractInitials } from "../utils/initials.util";
 
 interface ToastNotificationProps {
   toast: Toast;
@@ -179,7 +179,7 @@ export const ToastNotification: React.FC<ToastNotificationProps> = ({
             ) : (
               <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-sm">
                 <span className="text-sm font-semibold text-white">
-                  {getNameInitials(toast.avatar!.name)}
+                  {extractInitials(toast.avatar!.name)}
                 </span>
               </div>
             )}

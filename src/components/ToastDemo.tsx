@@ -1,6 +1,6 @@
 import React from "react";
 import { toast } from "../utils/toast.util";
-import { getRelativeTime } from "../utils/time.utils";
+import { formatRelativeTime } from "../utils/time.utils";
 
 export const ToastDemo: React.FC = () => {
   const showInfoToast = () => {
@@ -64,7 +64,7 @@ export const ToastDemo: React.FC = () => {
         avatar: {
           src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fHByb2ZpbGV8ZW58MHx8MHx8fDA%3D",
           name: "Katherine Moss",
-          timestamp: getRelativeTime(now),
+          timestamp: formatRelativeTime(now),
         },
 
         action: {

@@ -1,16 +1,23 @@
 import { useToastStore } from "../store/toast.store";
-import type { ToastType, ToastOptions } from "../types/toast.type";
+import type {
+  ToastType,
+  ToastOptions,
+  ToastId,
+  AvatarInfo,
+} from "../types/toast.type";
 
 const DEFAULT_DURATION = 3000;
 
-// Core toast function
-const createToast = (
+/**
+ * Internal helper to create and add a toast
+ */
+const pushToast = (
   type: ToastType,
   title: string,
   options: ToastOptions = {}
-): string => {
+): ToastId => {
   const { addToast } = useToastStore.getState();
-
+  const createdAtMs = Date.now(); // Create timestamp for when toast was created
   return addToast({
     type,
     title,
@@ -20,61 +27,28 @@ const createToast = (
     dedupeKey: options.dedupeKey,
     id: options.id,
     avatar: options.avatar,
+    createdAtMs,
   });
 };
 
-// Main toast API
 export const toast = {
-  /**
-   * Show an info toast
-   */
-  info: (title: string, options?: ToastOptions): string => {
-    return createToast("info", title, options);
-  },
+  info: (title: string, opts?: ToastOptions) => pushToast("info", title, opts),
+  warning: (title: string, opts?: ToastOptions) =>
+    pushToast("warning", title, opts),
+  success: (title: string, opts?: ToastOptions) =>
+    pushToast("success", title, opts),
+  error: (title: string, opts?: ToastOptions) =>
+    pushToast("error", title, opts),
 
-  /**
-   * Show a warning toast
-   */
-  warning: (title: string, options?: ToastOptions): string => {
-    return createToast("warning", title, options);
-  },
+  avatar: (title: string, opts: ToastOptions & { avatar: AvatarInfo }) =>
+    pushToast("avatar", title, opts),
 
-  /**
-   * Show a success toast
-   */
-  success: (title: string, options?: ToastOptions): string => {
-    return createToast("success", title, options);
-  },
-
-  /**
-   * Show an error toast
-   */
-  error: (title: string, options?: ToastOptions): string => {
-    return createToast("error", title, options);
-  },
-
-  /**
-   * Show an avatar notification toast
-   */
-  avatar: (
-    title: string,
-    options: ToastOptions & {
-      avatar: { src?: string; name: string; timestamp?: string };
-    }
-  ): string => {
-    return createToast("avatar", title, options);
-  },
-
-  /**
-   * Dismiss a specific toast by ID, or all toasts if no ID provided
-   */
-  dismiss: (id?: string): void => {
+  dismiss: (id?: ToastId) => {
     const { removeToast, dismissAll } = useToastStore.getState();
-
     if (id) {
-      removeToast(id);
+      removeToast(id); // Remove a specific toast
     } else {
-      dismissAll();
+      dismissAll(); // Dismiss all toasts
     }
   },
 };

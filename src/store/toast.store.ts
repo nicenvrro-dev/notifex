@@ -1,31 +1,40 @@
 import { create } from "zustand";
-import type { Toast } from "../types/toast.type";
+import type { Toast, ToastId } from "../types/toast.type";
 
 // Generate unique IDs
 const generateId = (): string => {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
   }
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return (
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
+  );
 };
 
 interface ToastStore {
   toasts: Toast[];
-  timers: Map<string, number>;
+  timers: Map<ToastId, number>;
   maxToasts: number;
 
   // Core actions
-  addToast: (toast: Omit<Toast, "id" | "createdAt"> & { id?: string }) => string;
-  removeToast: (id: string) => void;
+  addToast: (
+    toast: Omit<Toast, "id" | "createdAtMs"> & {
+      id?: string;
+      createdAtMs: number;
+    }
+  ) => ToastId;
+
+  removeToast: (id: ToastId) => void;
   dismissAll: () => void;
 
   // Timer management
-  pauseTimer: (id: string) => void;
-  resumeTimer: (id: string) => void;
-  clearTimer: (id: string) => void;
+  pauseTimer: (id: ToastId) => void;
+  resumeTimer: (id: ToastId) => void;
+  clearTimer: (id: ToastId) => void;
 
   // Internal helpers
-  _setTimers: (timers: Map<string, number>) => void;
+  _setTimers: (timers: Map<ToastId, number>) => void;
 }
 
 export const useToastStore = create<ToastStore>((set, get) => ({
@@ -36,23 +45,29 @@ export const useToastStore = create<ToastStore>((set, get) => ({
   addToast: (toast) => {
     const state = get();
     const id = toast.id || generateId();
-    const now = Date.now();
+    const createdAtMs = toast.createdAtMs;
+    const newToast: Toast = {
+      ...toast,
+      id,
+      createdAtMs,
+    };
 
     // Check for duplicate by dedupeKey
     if (toast.dedupeKey) {
-      const existingIndex = state.toasts.findIndex((t) => t.dedupeKey === toast.dedupeKey);
+      const existingIndex = state.toasts.findIndex(
+        (t) => t.dedupeKey === toast.dedupeKey
+      );
       if (existingIndex !== -1) {
         // Update existing toast instead of creating new one
         const existingToast = state.toasts[existingIndex];
         const updatedToast = {
-          ...toast,
+          ...newToast,
           id: existingToast.id,
-          createdAt: now,
+          createdAtMs,
         };
 
         const newToasts = [...state.toasts];
         newToasts[existingIndex] = updatedToast;
-
         set({ toasts: newToasts });
 
         // Reset timer for updated toast
@@ -69,12 +84,6 @@ export const useToastStore = create<ToastStore>((set, get) => ({
         return existingToast.id;
       }
     }
-
-    const newToast: Toast = {
-      ...toast,
-      id,
-      createdAt: now,
-    };
 
     // Add to toasts (keep only maxToasts)
     let newToasts = [newToast, ...state.toasts];
@@ -134,7 +143,7 @@ export const useToastStore = create<ToastStore>((set, get) => ({
     const toast = state.toasts.find((t) => t.id === id);
     if (toast && toast.duration > 0 && !state.timers.has(id)) {
       // Calculate remaining time based on creation time
-      const elapsed = Date.now() - toast.createdAt;
+      const elapsed = Date.now() - toast.createdAtMs;
       const remaining = Math.max(0, toast.duration - elapsed);
 
       if (remaining > 0) {

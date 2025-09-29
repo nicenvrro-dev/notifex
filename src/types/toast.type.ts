@@ -1,3 +1,5 @@
+export type ToastId = string;
+
 export type ToastType = "info" | "warning" | "error" | "success" | "avatar";
 
 export type ToastActionVariant =
@@ -7,51 +9,49 @@ export type ToastActionVariant =
   | "warning"
   | "danger"
   | "muted"
-  | "custom"; // use with className override
+  | "custom"; // full override w/ className
 
 export interface ToastAction {
+  /** Visible label of the button */
   label: string;
+
+  /** Callback triggered on click */
   onClick: () => void | Promise<void>;
-  /**
-   * Dismiss the toast after this action is clicked.
-   * Defaults to true.
-   */
+
+  /** Dismiss toast automatically after click (default: true) */
   dismissOnClick?: boolean;
-  /**
-   * Controls button color/style. Use "custom" + className for full control.
-   */
+  
+  /** Predefined styling variant */
   variant?: ToastActionVariant;
-  /**
-   * Extra classes to override/extend styles (esp. when variant === "custom").
-   */
+  
+  /** Extra classes (mainly for "custom") */
   className?: string;
 }
+
+
+export interface AvatarInfo {
+  src?: string;
+  name: string;
+  timestamp?: string;
+}
+
 
 export interface ToastOptions {
   description?: string;
   action?: ToastAction;
   duration?: number;
-  id?: string;
+  id?: ToastId;
   dedupeKey?: string;
-  avatar?: {
-    src?: string;
-    name: string;
-    timestamp?: string;
-  };
+  avatar?: AvatarInfo;
 }
 
-export interface Toast {
-  id: string;
+export interface Toast extends Required<Pick<ToastOptions, "duration">> {
+  id: ToastId;
   type: ToastType;
   title: string;
+  createdAtMs: number;
   description?: string;
   action?: ToastAction;
-  duration: number;
   dedupeKey?: string;
-  createdAt: number;
-  avatar?: {
-    src?: string;
-    name: string;
-    timestamp?: string;
-  };
+  avatar?: AvatarInfo;
 }

@@ -1,20 +1,12 @@
-// Extract initials from either (firstName, lastName) OR a fullName
-export function getNameInitials(firstNameOrFullName: string = "", lastName: string = "") {
-  let parts: string[];
+/**
+ * Extracts initials from either:
+ * - (firstName, lastName)
+ * - full name string
+ */
+export function extractInitials(firstNameOrFullName: string = "", lastName: string = "") {
+  const parts = lastName ? [firstNameOrFullName, lastName] : firstNameOrFullName.trim().split(/\s+/)
 
-  if (lastName) {
-    // Case: first + last name provided separately
-    parts = [firstNameOrFullName, lastName];
-  } else {
-    // Case: only full name provided
-    parts = firstNameOrFullName.trim().split(/\s+/);
-  }
-
-  // Take the first letter of the first and last "words" only
-  const initials = [parts[0], parts[parts.length - 1]]
-    .filter(Boolean)
-    .map((name) => name.charAt(0).toUpperCase())
-    .join("");
-
-  return initials;
+  return[parts[0], parts[parts.length - 1]].filter(Boolean).map(
+    (name) => name[0]?.toUpperCase() ?? ""
+  ).join("")
 }
